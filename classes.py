@@ -16,6 +16,7 @@ class Player():
         self.bowl_rating = bowl_rating
         self.ovr = (self.bat_rating + self.bowl_rating) / 2
         self.batted = False
+        self.score = 0
 
     def bowl_ball(self, game, batsman):
         chance_of_wide = 90 - self.bowl_rating
@@ -25,7 +26,12 @@ class Player():
             print("Wide")
             return 1
         else:
-            if randomChance <= int(0.05*(100 - batsman.bat_rating)) or randomChance <= 100 - int(self.bowl_rating):
+            if randomChance <= int(0.05*(100 - batsman.bat_rating)):
+                print(f"{game.on_strike.surname} Makes a big misske and is out lbw!")
+                return "W"
+            elif randomChance <= 100 - int(self.bowl_rating):
+                print(f"Absolute Jaffa from {game.current_bowler.surname}")
+                print(f"{game.on_strike.surname} is gone!")
                 return "W"
             elif randomChance <= batsman.bat_rating - 50:
                 return 6
@@ -53,6 +59,7 @@ class Team():
         self.players = players
         self.total = 0
         self.wickets = 0
+        self.index = None
 
         for player in players:
             total =+ player.ovr
@@ -62,6 +69,7 @@ class Team():
         output = "Name : role : bowl : bat : index \n"
         index = 0
         for i in self.players:
+            i.index = index
             output += f"{i.firstName} {i.surname} : {i.role} : {i.bowl_rating} : {i.bat_rating} : {index} \n"
             index += 1
         return output
@@ -94,24 +102,29 @@ class Game():
             self.bowling_side = self.team_1
         self.on_strike = self.batting_side.players[0]
         self.off_strike = self.batting_side.players[1]
+        print(f"Welcome to this One day between {self.team_1.name} and {self.team_2.name}")
+        print(f"{self.batting_side.name} will bat first")
+        print(f"{self.on_strike.surname} and {self.off_strike.surname} will open")
 
     def bowl_over(self):
-        self.current_bowler = self.bowling_side.players[int(input("What number bowler do you want?"))]
+        self.current_bowler = self.bowling_side.players[int(input("What number bowler do you want? "))]
         while (self.balls_in_over <= 6) and (self.batting_side.wickets < 10):
            outcome = self.current_bowler.bowl_ball(game=self, batsman=self.on_strike)
            if outcome == "W":
             self.batting_side.wickets += 1
             ok = True
             while ok:
-                player_choice = self.batting_side.players[int(input("What number batter do you want?"))]
+                player_choice = self.batting_side.players[int(input("What number batter do you want? "))]
                 if player_choice.batted == True:
                     pass
                 else:
                     self.on_strike = player_choice
+                    print(f"{self.on_strike.surname} is on strike")
                     ok = False
             self.balls_in_over += 1
            else:
             self.batting_side.total += outcome
+            self.on_strike.score += outcome
             self.balls_in_over += 1
             if outcome % 2 == 0:
                 pass
@@ -119,3 +132,10 @@ class Game():
                 self.on_strike, self.off_strike = self.off_strike, self.on_strike
            print(f"{self.batting_side.name}: {self.batting_side.total}-{self.batting_side.wickets}")
         self.balls_in_over = 0
+
+    def summary(self):
+        print("\n")
+        print(f"{self.on_strike.surname} : {self.on_strike.score}")
+        print(f"{self.off_strike.surname} : {self.off_strike.score}")
+        print(f"{self.batting_side.name}: {self.batting_side.total}-{self.batting_side.wickets}")
+        print("\n")

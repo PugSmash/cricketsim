@@ -39,3 +39,4 @@ match.toss()
 
 for i in range(match.total_overs):
     match.bowl_over()
+    match.summary()
